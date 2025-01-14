@@ -7,6 +7,7 @@
 - [ ]  **1. 주어진 문제를 해결하는 완성된 코드가 제출되었나요?**
     - 1번 문제 코드가 unexpected indent 오류로 실행이 안 되십니다.
     - ![image](https://github.com/user-attachments/assets/22a328c3-f2d9-4543-862d-d1e4c1dc92cc)
+    - ![image](https://github.com/user-attachments/assets/a6eef0c7-8c54-41c9-8732-b971e8813f11)
     - 2번 문제 코드는 정상적으로 작동합니다.
     
 - [ ]  **2. 전체 코드에서 가장 핵심적이거나 가장 복잡하고 이해하기 어려운 부분에 작성된 
