@@ -1,0 +1,554 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyMbvb2R/FhLT5gIU8ydVxvT",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/euns-tory/AIFFEL_quest_cr/blob/main/Practice/0210%EB%94%A5cv2\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#Mnist 데이터 살펴보기\n"
+      ],
+      "metadata": {
+        "id": "Y-YUN6SI4hR0"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "PXA7xn4D4XI6",
+        "outputId": "fc30e2dd-5079-42e8-dff5-9cbd4a1470b1"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "(60000, 28, 28)\n",
+            "(60000,)\n",
+            "학습셋 이미지 수 : 60000 개\n",
+            "테스트셋 이미지 수 : 10000 개\n"
+          ]
+        }
+      ],
+      "source": [
+        "import sys\n",
+        "import tensorflow as tf\n",
+        "import numpy as np\n",
+        "\n",
+        "# MNIST 데이터셋 불러오기\n",
+        "(X_train, Y_train), (X_test, Y_test) = tf.keras.datasets.mnist.load_data()\n",
+        "\n",
+        "# shape 확인하기\n",
+        "print(X_train.shape) # 28 x 28의 이미지가 60,000장\n",
+        "print(Y_train.shape) ## [ 5, 1, 2, 3, 4, 4,   .... ]\n",
+        "print(\"학습셋 이미지 수 : %d 개\" % (X_train.shape[0]))\n",
+        "print(\"테스트셋 이미지 수 : %d 개\" % (X_test.shape[0]))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# MNIST 데이터를 시각화하기\n",
+        "import matplotlib.pyplot as plt\n",
+        "print(Y_train[0])\n",
+        "plt.imshow(X_train[0], cmap='Greys') # 흑백 이미지로 확인\n",
+        "plt.show()\n",
+        "\n",
+        "# 데이터를 직접 들여다보기\n",
+        "for x in X_train[0]:\n",
+        "    for i in x:\n",
+        "        sys.stdout.write('%d\\t' % i)\n",
+        "    sys.stdout.write('\\n')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 992
+        },
+        "collapsed": true,
+        "id": "4BGOXJV441Vg",
+        "outputId": "e37d2e80-1588-4acb-8f85-8f2fc80213a2"
+      },
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "5\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<Figure size 640x480 with 1 Axes>"
+            ],
+            "image/png": "iVBORw0KGgoAAAANSUhEUgAAAaAAAAGdCAYAAABU0qcqAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjEwLjAsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvlHJYcgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAHABJREFUeJzt3X9s1PUdx/HX8aNnkfaw1PbaUbCgwiZSI4OuQRhK01ITI8gWfybgDEQsZoC/UqMguKwOM8d0TLNEqSbiDzZ+RLORYbElbi0GhBF0drSpUgItyta7UqQw+tkfhBsnRfge17575flILrF39+69992lT7/e9epzzjkBANDD+lkvAAC4NBEgAIAJAgQAMEGAAAAmCBAAwAQBAgCYIEAAABMECABgYoD1At/W2dmpAwcOKCUlRT6fz3odAIBHzjm1tbUpOztb/fqd+zyn1wXowIEDysnJsV4DAHCRmpqaNGzYsHPe3usClJKSIunU4qmpqcbbAAC8CofDysnJifw8P5duC9CqVav0/PPPq7m5WXl5eXrppZc0ceLE886d/s9uqampBAgAEtj5XkbpljchvPPOO1q8eLGWLl2qTz75RHl5eSouLtahQ4e64+EAAAmoWwL0wgsvaO7cubr//vv1gx/8QK+88ooGDRqk1157rTseDgCQgOIeoOPHj2vHjh0qLCz8/4P066fCwkLV1NScdf+Ojg6Fw+GoCwCg74t7gL7++mudPHlSmZmZUddnZmaqubn5rPuXl5crEAhELrwDDgAuDea/iFpWVqZQKBS5NDU1Wa8EAOgBcX8XXHp6uvr376+Wlpao61taWhQMBs+6v9/vl9/vj/caAIBeLu5nQElJSRo/frwqKysj13V2dqqyslIFBQXxfjgAQILqlt8DWrx4sWbPnq0f/vCHmjhxolauXKn29nbdf//93fFwAIAE1C0BuvPOO/XVV19pyZIlam5u1g033KBNmzad9cYEAMCly+ecc9ZLnCkcDisQCCgUCvFJCACQgC7057j5u+AAAJcmAgQAMEGAAAAmCBAAwAQBAgCYIEAAABMECABgggABAEwQIACACQIEADBBgAAAJggQAMAEAQIAmCBAAAATBAgAYIIAAQBMECAAgAkCBAAwQYAAACYIEADABAECAJggQAAAEwQIAGCCAAEATBAgAIAJAgQAMEGAAAAmCBAAwAQBAgCYIEAAABMECABgggABAEwQIACACQIEADBBgAAAJggQAMAEAQIAmCBAAAATBAgAYIIAAQBMECAAgAkCBAAwQYAAACYIEADABAECAJggQAAAEwQIAGCCAAEATBAgAIAJAgQAMEGAAAAmCBAAwMQA6wWA3qSzs9PzTEdHRzdsEh+vv/56THPt7e2eZz777DPPMytXrvQ88+STT3qe+d3vfud5RpKSk5M9z/z617/2PDN//nzPM30BZ0AAABMECABgIu4BeuaZZ+Tz+aIuY8aMiffDAAASXLe8BnTdddfpgw8++P+DDOClJgBAtG4pw4ABAxQMBrvjWwMA+ohueQ1o7969ys7O1siRI3Xvvfdq375957xvR0eHwuFw1AUA0PfFPUD5+fmqqKjQpk2b9PLLL6uxsVGTJ09WW1tbl/cvLy9XIBCIXHJycuK9EgCgF4p7gEpKSvTTn/5U48aNU3Fxsf785z+rtbVV7777bpf3LysrUygUilyamprivRIAoBfq9ncHDBkyRNdee63q6+u7vN3v98vv93f3GgCAXqbbfw/oyJEjamhoUFZWVnc/FAAggcQ9QI8++qiqq6v1xRdf6O9//7tmzpyp/v376+677473QwEAEljc/xPc/v37dffdd+vw4cO68sorddNNN6m2tlZXXnllvB8KAJDA4h6gt99+O97fEr1UKBTyPHPy5EnPM//4xz88z/z1r3/1PCNJra2tnmf+8Ic/xPRYfc1VV13leeaRRx7xPPPqq696ngkEAp5nJGny5MmeZ2655ZaYHutSxGfBAQBMECAAgAkCBAAwQYAAACYIEADABAECAJggQAAAEwQIAGCCAAEATBAgAIAJAgQAMEGAAAAmfM45Z73EmcLhsAKBgEKhkFJTU63XuSTs378/prkbbrjB88x//vOfmB4LPatfP+//brp582bPM8nJyZ5nYpGRkRHT3ODBgz3P8Mn/F/5znDMgAIAJAgQAMEGAAAAmCBAAwAQBAgCYIEAAABMECABgggABAEwQIACACQIEADBBgAAAJggQAMAEAQIAmBhgvQDsDR06NKa5zMxMzzN8GvYpRUVFnmdi+f9p3bp1nmckye/3e56ZOnVqTI+FSxdnQAAAEwQIAGCCAAEATBAgAIAJAgQAMEGAAAAmCBAAwAQBAgCYIEAAABMECABgggABAEwQIACACT6MFEpO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eVKZmZlR12dmZurzzz832spGfn6+KioqNHr0aB08eFDLli3T5MmTtWfPHqWkpFivZ6K5uVmSunx+nL7tUjF9+nTdcccdys3NVUNDg5588kmVlJSopqZG/fv3t14v7jo7O7Vw4UJNmjRJY8eOlXTq+ZCUlKQhQ4ZE3bcvPx+6Og6SdM8992jEiBHKzs7W7t279cQTT6iurk7r1q0z3DZarw8Q/q+kpCTyz+PGjVN+fr5GjBihd999Vw888IDhZugN7rrrrsg/X3/99Ro3bpxGjRqlqqoqTZs2zXCz7lFaWqo9e/ZcEq+DfpdzHYd58+ZF/vn6669XVlaWpk2bpoaGBo0aNaqn1+xSr/9PcOnp6erfv/9Z72JpaWlRMBg02qp3GDJkiK699lrV19dbr2Lm9HOA58fZRo4cqfT09D75/FiwYIHef/99ffjhh1F/viUYDOr48eNqbW2Nun9ffT6c6zh0JT8/X5J61fOh1wcoKSlJ48ePV2VlZeS6zs5OVVZWqqCgwHAze0eOHFFDQ4OysrKsVzGTm5urYDAY9fwIh8Patm3bJf/82L9/vw4fPtynnh/OOS1YsEDr16/Xli1blJubG3X7+PHjNXDgwKjnQ11dnfbt29enng/nOw5d2bVrlyT1rueD9bsgLsTbb7/t/H6/q6iocJ999pmbN2+eGzJkiGtubrZerUc98sgjrqqqyjU2Nrq//e1vrrCw0KWnp7tDhw5Zr9at2tra3M6dO93OnTudJPfCCy+4nTt3ui+//NI559xzzz3nhgwZ4jZu3Oh2797tbr/9dpebm+u++eYb483j67uOQ1tbm3v00UddTU2Na2xsdB988IG78cYb3TXXXOOOHTtmvXrczJ8/3wUCAVdVVeUOHjwYuRw9ejRynwcffNANHz7cbdmyxW3fvt0VFBS4goICw63j73zHob6+3i1fvtxt377dNTY2uo0bN7qRI0e6KVOmGG8eLSEC5JxzL730khs+fLhLSkpyEydOdLW1tdYr9bg777zTZWVluaSkJPe9733P3Xnnna6+vt56rW734YcfOklnXWbPnu2cO/VW7KefftplZmY6v9/vpk2b5urq6myX7gbfdRyOHj3qioqK3JVXXukGDhzoRowY4ebOndvn/iWtq//9ktzq1asj9/nmm2/cQw895K644go3aNAgN3PmTHfw4EG7pbvB+Y7Dvn373JQpU1xaWprz+/3u6quvdo899pgLhUK2i38Lf44BAGCi178GBADomwgQAMAEAQIAmCBAAAATBAgAYIIAAQBMECAAgAkCBAAwQYAAACYIEADABAECAJggQAAAE/8DmToddvzB/AQAAAAASUVORK5CYII=\n"
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t3\t18\t18\t18\t126\t136\t175\t26\t166\t255\t247\t127\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t30\t36\t94\t154\t170\t253\t253\t253\t253\t253\t225\t172\t253\t242\t195\t64\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t49\t238\t253\t253\t253\t253\t253\t253\t253\t253\t251\t93\t82\t82\t56\t39\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t18\t219\t253\t253\t253\t253\t253\t198\t182\t247\t241\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t80\t156\t107\t253\t253\t205\t11\t0\t43\t154\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t14\t1\t154\t253\t90\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t139\t253\t190\t2\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t11\t190\t253\t70\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t35\t241\t225\t160\t108\t1\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t81\t240\t253\t253\t119\t25\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t45\t186\t253\t253\t150\t27\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t16\t93\t252\t253\t187\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t249\t253\t249\t64\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t46\t130\t183\t253\t253\t207\t2\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t39\t148\t229\t253\t253\t253\t250\t182\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t24\t114\t221\t253\t253\t253\t253\t201\t78\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t23\t66\t213\t253\t253\t253\t253\t198\t81\t2\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t18\t171\t219\t253\t253\t253\t253\t195\t80\t9\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t55\t172\t226\t253\t253\t253\t253\t244\t133\t11\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t136\t253\t253\t253\t212\t135\t132\t16\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n",
+            "0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#MLP 구조 만들기"
+      ],
+      "metadata": {
+        "id": "Fst6U3gt5J4_"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# MLP 구조에 적절한 input의 형태로 변형하기\n",
+        "## reshape()을 사용하여 2차원의 데이터를 1차원으로 변형\n",
+        "## 1차원으로 변형함과 동시에 Normalization\n",
+        "X_train = X_train.reshape(X_train.shape[0], 784).astype('float32') # 28 x 28= 784\n",
+        "X_test = X_test.reshape(X_test.shape[0], 784).astype('float32')\n",
+        "print(X_train.shape)\n",
+        "#(60000, 784)\n",
+        "\n",
+        "\n",
+        "# Label 값을 One-hot encoding 하기 (0~9까지의 숫자들을 (1,0,0,0,,,)꼴로 표현 )\n",
+        "# Multi-Class Classfication이므로 keras.utils.to_categorical을 사용\n",
+        "Y_train = tf.keras.utils.to_categorical(Y_train)\n",
+        "Y_test = tf.keras.utils.to_categorical(Y_test)\n",
+        "\n",
+        "print(Y_train.shape)\n",
+        "print(Y_test.shape)\n",
+        "print(Y_train[0])"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "tQzyIL245MvI",
+        "outputId": "97b6ce5a-ac7d-40c5-803f-17fbc0896816"
+      },
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "(60000, 784)\n",
+            "(60000, 10)\n",
+            "(10000, 10)\n",
+            "[0. 0. 0. 0. 0. 1. 0. 0. 0. 0.]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#MLP 모델 만들기 - Functional API"
+      ],
+      "metadata": {
+        "id": "YNBg-Oya6HO9"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 모델 설계하기\n",
+        "input_layer = tf.keras.layers.Input(shape=(784,)) # input layer, input의 사이즈에 맞게 shape을 지정하는 것이 중요\n",
+        "x = tf.keras.layers.Dense(512, activation='relu')(input_layer) # hidden layer 1, 512개의 perceptron으로 구성된 fully connted layer, activation 함수는 relu\n",
+        "x = tf.keras.layers.Dense(512, activation='relu')(x) # hidden layer 2\n",
+        "\n",
+        "# 분류해야 하는 class 0~9 (10개) -> 따라서 최종 layer의 perceptron은 10개\n",
+        "out_layer= tf.keras.layers.Dense(10, activation='softmax')(x)\n",
+        "\n",
+        "model = tf.keras.Model(inputs=[input_layer], outputs=[out_layer])\n",
+        "model.summary()\n",
+        "\n",
+        "\n",
+        "loss=tf.keras.losses.categorical_crossentropy\n",
+        "optimizer = tf.keras.optimizers.Adam(learning_rate = 0.001)\n",
+        "metric=tf.keras.metrics.categorical_accuracy\n",
+        "model.compile(loss = loss,\n",
+        "              optimizer = optimizer,\n",
+        "              metrics = [metric])\n",
+        "\n",
+        "\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 257
+        },
+        "id": "zd3-dRhx5ZqF",
+        "outputId": "f53d36f9-665d-4806-c912-4fd5a1404c98"
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1mModel: \"functional_1\"\u001b[0m\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\">Model: \"functional_1\"</span>\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓\n",
+              "┃\u001b[1m \u001b[0m\u001b[1mLayer (type)                        \u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1mOutput Shape               \u001b[0m\u001b[1m \u001b[0m┃\u001b[1m \u001b[0m\u001b[1m        Param #\u001b[0m\u001b[1m \u001b[0m┃\n",
+              "┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩\n",
+              "│ input_layer_1 (\u001b[38;5;33mInputLayer\u001b[0m)           │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m784\u001b[0m)                 │               \u001b[38;5;34m0\u001b[0m │\n",
+              "├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤\n",
+              "│ dense_3 (\u001b[38;5;33mDense\u001b[0m)                      │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m512\u001b[0m)                 │         \u001b[38;5;34m401,920\u001b[0m │\n",
+              "├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤\n",
+              "│ dense_4 (\u001b[38;5;33mDense\u001b[0m)                      │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m512\u001b[0m)                 │         \u001b[38;5;34m262,656\u001b[0m │\n",
+              "├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤\n",
+              "│ dense_5 (\u001b[38;5;33mDense\u001b[0m)                      │ (\u001b[38;5;45mNone\u001b[0m, \u001b[38;5;34m10\u001b[0m)                  │           \u001b[38;5;34m5,130\u001b[0m │\n",
+              "└──────────────────────────────────────┴─────────────────────────────┴─────────────────┘\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓\n",
+              "┃<span style=\"font-weight: bold\"> Layer (type)                         </span>┃<span style=\"font-weight: bold\"> Output Shape                </span>┃<span style=\"font-weight: bold\">         Param # </span>┃\n",
+              "┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩\n",
+              "│ input_layer_1 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">InputLayer</span>)           │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">784</span>)                 │               <span style=\"color: #00af00; text-decoration-color: #00af00\">0</span> │\n",
+              "├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤\n",
+              "│ dense_3 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                      │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">512</span>)                 │         <span style=\"color: #00af00; text-decoration-color: #00af00\">401,920</span> │\n",
+              "├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤\n",
+              "│ dense_4 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                      │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">512</span>)                 │         <span style=\"color: #00af00; text-decoration-color: #00af00\">262,656</span> │\n",
+              "├──────────────────────────────────────┼─────────────────────────────┼─────────────────┤\n",
+              "│ dense_5 (<span style=\"color: #0087ff; text-decoration-color: #0087ff\">Dense</span>)                      │ (<span style=\"color: #00d7ff; text-decoration-color: #00d7ff\">None</span>, <span style=\"color: #00af00; text-decoration-color: #00af00\">10</span>)                  │           <span style=\"color: #00af00; text-decoration-color: #00af00\">5,130</span> │\n",
+              "└──────────────────────────────────────┴─────────────────────────────┴─────────────────┘\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Total params: \u001b[0m\u001b[38;5;34m669,706\u001b[0m (2.55 MB)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Total params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">669,706</span> (2.55 MB)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Trainable params: \u001b[0m\u001b[38;5;34m669,706\u001b[0m (2.55 MB)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Trainable params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">669,706</span> (2.55 MB)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "\u001b[1m Non-trainable params: \u001b[0m\u001b[38;5;34m0\u001b[0m (0.00 B)\n"
+            ],
+            "text/html": [
+              "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"font-weight: bold\"> Non-trainable params: </span><span style=\"color: #00af00; text-decoration-color: #00af00\">0</span> (0.00 B)\n",
+              "</pre>\n"
+            ]
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#MLP모델 Training하기"
+      ],
+      "metadata": {
+        "id": "yCYnvI9eYejq"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# validation_data 옵션으로 테스트 데이터만 넣어주어서 검증 데이터 분류가 가능\n",
+        "history = model.fit(X_train, Y_train, validation_split=0.2, epochs=30, batch_size=1000, verbose=1)\n",
+        "print(history.history.keys())\n",
+        "\n",
+        "# Training loss 확인하기\n",
+        "loss = history.history['loss']\n",
+        "print(loss)\n",
+        "\n",
+        "\n",
+        "\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "tK-ckz7k67De",
+        "outputId": "be7b64c6-60a2-4d88-8734-ea8bd63059ec"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Epoch 1/30\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.11/dist-packages/keras/src/models/functional.py:237: UserWarning: The structure of `inputs` doesn't match the expected structure.\n",
+            "Expected: ['keras_tensor_4']\n",
+            "Received: inputs=Tensor(shape=(1000, 784))\n",
+            "  warnings.warn(msg)\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m5s\u001b[0m 81ms/step - categorical_accuracy: 0.6355 - loss: 36.2864 - val_categorical_accuracy: 0.9215 - val_loss: 1.2181\n",
+            "Epoch 2/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m5s\u001b[0m 95ms/step - categorical_accuracy: 0.9301 - loss: 0.9145 - val_categorical_accuracy: 0.9361 - val_loss: 0.7108\n",
+            "Epoch 3/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 88ms/step - categorical_accuracy: 0.9523 - loss: 0.3925 - val_categorical_accuracy: 0.9408 - val_loss: 0.5779\n",
+            "Epoch 4/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 82ms/step - categorical_accuracy: 0.9698 - loss: 0.1976 - val_categorical_accuracy: 0.9447 - val_loss: 0.5108\n",
+            "Epoch 5/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 76ms/step - categorical_accuracy: 0.9794 - loss: 0.1055 - val_categorical_accuracy: 0.9475 - val_loss: 0.4713\n",
+            "Epoch 6/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m6s\u001b[0m 91ms/step - categorical_accuracy: 0.9887 - loss: 0.0520 - val_categorical_accuracy: 0.9486 - val_loss: 0.4574\n",
+            "Epoch 7/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 74ms/step - categorical_accuracy: 0.9926 - loss: 0.0311 - val_categorical_accuracy: 0.9511 - val_loss: 0.4390\n",
+            "Epoch 8/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 81ms/step - categorical_accuracy: 0.9967 - loss: 0.0121 - val_categorical_accuracy: 0.9518 - val_loss: 0.4337\n",
+            "Epoch 9/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m5s\u001b[0m 113ms/step - categorical_accuracy: 0.9991 - loss: 0.0049 - val_categorical_accuracy: 0.9518 - val_loss: 0.4326\n",
+            "Epoch 10/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m10s\u001b[0m 99ms/step - categorical_accuracy: 0.9996 - loss: 0.0025 - val_categorical_accuracy: 0.9518 - val_loss: 0.4286\n",
+            "Epoch 11/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m5s\u001b[0m 93ms/step - categorical_accuracy: 1.0000 - loss: 9.0999e-04 - val_categorical_accuracy: 0.9529 - val_loss: 0.4268\n",
+            "Epoch 12/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 74ms/step - categorical_accuracy: 1.0000 - loss: 5.9620e-04 - val_categorical_accuracy: 0.9528 - val_loss: 0.4256\n",
+            "Epoch 13/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m6s\u001b[0m 89ms/step - categorical_accuracy: 1.0000 - loss: 4.6106e-04 - val_categorical_accuracy: 0.9531 - val_loss: 0.4253\n",
+            "Epoch 14/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m5s\u001b[0m 80ms/step - categorical_accuracy: 1.0000 - loss: 4.1053e-04 - val_categorical_accuracy: 0.9535 - val_loss: 0.4256\n",
+            "Epoch 15/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m5s\u001b[0m 74ms/step - categorical_accuracy: 1.0000 - loss: 3.7292e-04 - val_categorical_accuracy: 0.9534 - val_loss: 0.4254\n",
+            "Epoch 16/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m5s\u001b[0m 100ms/step - categorical_accuracy: 1.0000 - loss: 3.2390e-04 - val_categorical_accuracy: 0.9538 - val_loss: 0.4253\n",
+            "Epoch 17/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 83ms/step - categorical_accuracy: 1.0000 - loss: 2.9660e-04 - val_categorical_accuracy: 0.9541 - val_loss: 0.4252\n",
+            "Epoch 18/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m5s\u001b[0m 74ms/step - categorical_accuracy: 1.0000 - loss: 2.5806e-04 - val_categorical_accuracy: 0.9541 - val_loss: 0.4249\n",
+            "Epoch 19/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m7s\u001b[0m 119ms/step - categorical_accuracy: 1.0000 - loss: 2.4652e-04 - val_categorical_accuracy: 0.9543 - val_loss: 0.4250\n",
+            "Epoch 20/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 75ms/step - categorical_accuracy: 1.0000 - loss: 2.3193e-04 - val_categorical_accuracy: 0.9547 - val_loss: 0.4249\n",
+            "Epoch 21/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m5s\u001b[0m 75ms/step - categorical_accuracy: 1.0000 - loss: 2.1342e-04 - val_categorical_accuracy: 0.9548 - val_loss: 0.4248\n",
+            "Epoch 22/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m6s\u001b[0m 92ms/step - categorical_accuracy: 1.0000 - loss: 1.9819e-04 - val_categorical_accuracy: 0.9549 - val_loss: 0.4250\n",
+            "Epoch 23/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 74ms/step - categorical_accuracy: 1.0000 - loss: 1.9053e-04 - val_categorical_accuracy: 0.9552 - val_loss: 0.4248\n",
+            "Epoch 24/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m6s\u001b[0m 102ms/step - categorical_accuracy: 1.0000 - loss: 1.7247e-04 - val_categorical_accuracy: 0.9552 - val_loss: 0.4246\n",
+            "Epoch 25/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 76ms/step - categorical_accuracy: 1.0000 - loss: 1.6270e-04 - val_categorical_accuracy: 0.9552 - val_loss: 0.4247\n",
+            "Epoch 26/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 81ms/step - categorical_accuracy: 1.0000 - loss: 1.5613e-04 - val_categorical_accuracy: 0.9553 - val_loss: 0.4248\n",
+            "Epoch 27/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m6s\u001b[0m 107ms/step - categorical_accuracy: 1.0000 - loss: 1.5188e-04 - val_categorical_accuracy: 0.9553 - val_loss: 0.4247\n",
+            "Epoch 28/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 83ms/step - categorical_accuracy: 1.0000 - loss: 1.4618e-04 - val_categorical_accuracy: 0.9554 - val_loss: 0.4250\n",
+            "Epoch 29/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m4s\u001b[0m 75ms/step - categorical_accuracy: 1.0000 - loss: 1.3812e-04 - val_categorical_accuracy: 0.9554 - val_loss: 0.4248\n",
+            "Epoch 30/30\n",
+            "\u001b[1m48/48\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m7s\u001b[0m 110ms/step - categorical_accuracy: 1.0000 - loss: 1.2927e-04 - val_categorical_accuracy: 0.9556 - val_loss: 0.4249\n",
+            "dict_keys(['categorical_accuracy', 'loss', 'val_categorical_accuracy', 'val_loss'])\n",
+            "[14.60921859741211, 0.7802035212516785, 0.3748709261417389, 0.19612495601177216, 0.10340611636638641, 0.053401920944452286, 0.025722522288560867, 0.013096259906888008, 0.005304344929754734, 0.002287061419337988, 0.0010432391427457333, 0.0006080287275835872, 0.00047429290134459734, 0.0003981938643846661, 0.00035251950612291694, 0.0003202889347448945, 0.0002929526672232896, 0.0002674109418876469, 0.000248733937041834, 0.00023020096705295146, 0.00021520219161175191, 0.00020074388885404915, 0.00018859072588384151, 0.00017730450781527907, 0.00016737423720769584, 0.00015857037215027958, 0.0001497659832239151, 0.0001422786881448701, 0.00013565956032834947, 0.00012895255349576473]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "# Training loss 확인하기\n",
+        "loss = history.history['loss']\n",
+        "print(loss)\n",
+        "\n",
+        "# Q. Validation loss를 확인해 보세요.\n",
+        "val_loss=history.history['val_loss'][-1]\n",
+        "print(val_loss)\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "yJnhR1rEYnUW",
+        "outputId": "d3359ab7-ca44-4a66-e3a3-c900e9f1980f"
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[14.60921859741211, 0.7802035212516785, 0.3748709261417389, 0.19612495601177216, 0.10340611636638641, 0.053401920944452286, 0.025722522288560867, 0.013096259906888008, 0.005304344929754734, 0.002287061419337988, 0.0010432391427457333, 0.0006080287275835872, 0.00047429290134459734, 0.0003981938643846661, 0.00035251950612291694, 0.0003202889347448945, 0.0002929526672232896, 0.0002674109418876469, 0.000248733937041834, 0.00023020096705295146, 0.00021520219161175191, 0.00020074388885404915, 0.00018859072588384151, 0.00017730450781527907, 0.00016737423720769584, 0.00015857037215027958, 0.0001497659832239151, 0.0001422786881448701, 0.00013565956032834947, 0.00012895255349576473]\n",
+            "0.42492082715034485\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#학습된 모델의 성능 확인하기"
+      ],
+      "metadata": {
+        "id": "FbIwYTJk925e"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Test 데이터를 통해서 정확도 확인하기\n",
+        "print(\"\\n Test Accuracy: %.4f\" % (model.evaluate(X_test, Y_test)[1]))\n",
+        "\n",
+        "# 그래프로 표현\n",
+        "x_len = np.arange(len(val_loss))\n",
+        "plt.plot(x_len, val_loss, marker='.', c=\"red\", label='validation loss')\n",
+        "plt.plot(x_len, loss, marker='.', c=\"blue\", label='training loss')\n",
+        "\n",
+        "# 그래프에 그리드를 주고 레이블을 표시\n",
+        "plt.legend(loc='upper right')\n",
+        "# plt.axis([0, 20, 0, 0.35])\n",
+        "plt.grid()\n",
+        "plt.xlabel('epoch')\n",
+        "plt.ylabel('loss')\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 300
+        },
+        "id": "PjqLSlOP952s",
+        "outputId": "6bc83325-219d-4013-f539-73781335aa05"
+      },
+      "execution_count": 12,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[1m313/313\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m1s\u001b[0m 4ms/step - categorical_accuracy: 0.9481 - loss: 0.5450\n",
+            "\n",
+            " Test Accuracy: 0.9569\n"
+          ]
+        },
+        {
+          "output_type": "error",
+          "ename": "TypeError",
+          "evalue": "object of type 'float' has no len()",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mTypeError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-12-16ce19457a6b>\u001b[0m in \u001b[0;36m<cell line: 0>\u001b[0;34m()\u001b[0m\n\u001b[1;32m      3\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      4\u001b[0m \u001b[0;31m# 그래프로 표현\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 5\u001b[0;31m \u001b[0mx_len\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0marange\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mlen\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mval_loss\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      6\u001b[0m \u001b[0mplt\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mplot\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx_len\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mval_loss\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mmarker\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'.'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mc\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m\"red\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mlabel\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'validation loss'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      7\u001b[0m \u001b[0mplt\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mplot\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx_len\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mloss\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mmarker\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'.'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mc\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m\"blue\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mlabel\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'training loss'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mTypeError\u001b[0m: object of type 'float' has no len()"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "52VA8Qgy97en"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
