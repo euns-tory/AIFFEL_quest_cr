@@ -93,3 +93,4 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
 }
 
 
+// 스스로 작성하기에는 아직 flutter에 대한 이해도가 낮은 것 같다. 앞으로 직접 손으로 작성해봐가며 다트 언어를 내 것으로 만들고 싶다. 
